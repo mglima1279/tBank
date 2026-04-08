@@ -13,17 +13,23 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class JwtService {
 
     @Value("${api.security.token.secret}")
-    private static String secret;
+    private String secret;
 
     @Value("${api.security.token.expiration}")
-    private static long EXPIRATION_TIME;
+    private long EXPIRATION_TIME;
 
-    Key SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes());
+    private Key SECRET_KEY;
+
+    @PostConstruct
+    protected void init() {
+        SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(User user) {
 
