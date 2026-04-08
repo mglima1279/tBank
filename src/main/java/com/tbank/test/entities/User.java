@@ -6,10 +6,12 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,16 +30,25 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(nullable = false, length = 155, unique = true)
     private String email;
 
+    @Column(nullable = false, length = 11, unique = true)
     private String tel;
 
+    @Column(nullable = false, length = 11, unique = true)
     private String cpf;
 
+    @Column(nullable = false, length = 255)
     private String password;
 
+    @OneToOne
+    private Account account;
+
+    //------------------------------------------------------------------
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

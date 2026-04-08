@@ -6,7 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tbank.test.dto.UserRequest;
+import com.tbank.test.entities.Account;
 import com.tbank.test.entities.User;
+import com.tbank.test.repositories.AccountRepository;
 import com.tbank.test.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
     public User createUser(UserRequest request) {
@@ -28,6 +32,14 @@ public class UserService {
         if (user == null) {
             throw new RuntimeException("Error creating user");
         }
+
+        Account account = new Account();
+        account.setBalance(0);
+        account.setUser(user);
+
+        account = accountRepository.save(account);
+
+        user.setAccount(account);
 
         return userRepository.save(user);
     }
