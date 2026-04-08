@@ -1,0 +1,70 @@
+package com.tbank.test.services;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.function.Function;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.tbank.test.entities.User;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+@Service
+public class JwtService {
+
+    @Value("${api.security.token.secret}")
+    private static String secret;
+
+    @Value("${api.security.token.expiration}")
+    private static long EXPIRATION_TIME;
+
+    Key SECRET_KEY = Keys.hmacShaKeyFor(secret.getBytes());
+
+    public String generateToken(User user) {
+
+        return Jwts.builder()
+                .setSubject(user.getCpf())
+                .claim("id", user.getId())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractCpf(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Long extractId(String token) {
+        return extractClaim(token, claims -> claims.get("id", Long.class));
+    }
+
+    public boolean isTokenValid(String token, User user) {
+        final String cpf = extractCpf(token);
+        return cpf.equals(user.getUsername()) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        try {
+            final Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claimsResolver.apply(claims);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Token inválido");
+        }
+    }
+}
