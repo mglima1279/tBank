@@ -68,8 +68,17 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public void validatePassword(String rawPassword, String encodedPassword) {
-        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+    public void validatePassword(UserRequest request) {
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new RuntimeException("422 - Password is required");
+        }
+        if (request.getCpf() == null || request.getCpf().isEmpty()) {
+            throw new RuntimeException("422 - CPF is required");
+        }
+
+        User user = findByCpf(request.getCpf());
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("401 - Invalid password");
         }
     }
