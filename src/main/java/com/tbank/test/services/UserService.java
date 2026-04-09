@@ -37,9 +37,7 @@ public class UserService {
         account.setBalance(0);
         account.setUser(user);
 
-        account = accountRepository.save(account);
-
-        user.setAccount(account);
+        accountRepository.save(account);
 
         return userRepository.save(user);
     }
